@@ -1,0 +1,47 @@
+version: '3'
+services:
+  keycloak_demo:
+    image: quay.io/keycloak/keycloak:23.0.4
+    command: start-dev
+    volumes:
+      - ${PATH_TO_CUSTOM_THEME}:/opt/keycloak/themes/custom-theme
+    environment:
+      KC_DB: ${KC_DB}
+      KC_DB_URL_HOST: ${KC_DB_URL_HOST}
+      KC_DB_URL_DATABASE: ${KC_DB_URL_DATABASE}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_SCHEMA: ${KC_DB_SCHEMA}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    ports:
+      - "8890:8080"
+    depends_on:
+      postgres_keycloak_demo:
+        condition: service_healthy
+    networks:
+      - keycloak_demo_dev_network
+  
+  postgres_keycloak_demo:
+    image: postgres
+    command: postgres -c 'max_connections=200'
+    volumes:
+      - pgdata_keycloak_demo:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: "exit 0"
+    ports:
+      - "5436:5432"
+    networks:
+      - keycloak_demo_dev_network
+volumes:
+  pgdata_keycloak_demo:
+networks:
+  keycloak_demo_dev_network:
+    driver: bridge
+
+
+  
